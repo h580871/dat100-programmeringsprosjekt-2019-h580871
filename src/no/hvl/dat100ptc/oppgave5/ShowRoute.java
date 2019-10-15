@@ -114,16 +114,16 @@ public class ShowRoute extends EasyGraphics {
 		int TEXTDISTANCE = 20;
 
 		setColor(0,0,0);
-		setFont("Impact",15);
+		setFont("Courier",11);
 		
 		// TODO - START
 		
-	drawString(String.format("%-15s:%11s", "Total time", GPSUtils.formatTime(gpscomputer.totalTime())), 15, 15);
-	drawString(String.format("%-15s:%11.2f km", "Total distance", gpscomputer.totalDistance()),15, 25);
-	drawString(String.format("%-15s:%11.2f m", "Total elevation", gpscomputer.totalElevation()), 15, 35);
-	drawString(String.format("%-15s:%11.2f m", "Max speed", gpscomputer.maxSpeed()), 15, 45);
-	drawString(String.format("%-15s:%11.2f m", "Average speed", gpscomputer.averageSpeed()), 15, 55);
-	drawString(String.format("%-15s:%11.2f m", "Energy", gpscomputer.totalKcal(gpscomputer.getWEIGHT())), 15, 65);
+	drawString(String.format("%-15s:%11s", "Total Time      ", GPSUtils.formatTime(gpscomputer.totalTime())), 15, 15);
+	drawString(String.format("%-15s:%11.2f km", "Total distance  ", gpscomputer.totalDistance()/1000),15, 25);
+	drawString(String.format("%-15s:%11.2f m", "Total elevation ", gpscomputer.totalElevation()), 15, 35);
+	drawString(String.format("%-15s:%11.2f km/h", "Max speed       ", gpscomputer.maxSpeed()), 15, 45);
+	drawString(String.format("%-15s:%11.2f km/h", "Average speed   ", gpscomputer.averageSpeed()), 15, 55);
+	drawString(String.format("%-15s:%11.2f kcal", "Energy          ", gpscomputer.totalKcal(gpscomputer.getWEIGHT())), 15, 65);
 		
 		// TODO - SLUTT;
 	}
