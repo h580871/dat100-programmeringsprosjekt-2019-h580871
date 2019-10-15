@@ -8,9 +8,9 @@ import no.hvl.dat100ptc.oppgave2.GPSDataFileReader;
 import no.hvl.dat100ptc.oppgave3.GPSUtils;
 
 public class GPSComputer {
-
+	
 	private GPSPoint[] gpspoints;
-
+	
 	public GPSComputer(String filename) {
 
 		GPSData gpsdata = GPSDataFileReader.readGPSFile(filename);
@@ -21,22 +21,24 @@ public class GPSComputer {
 	public GPSComputer(GPSPoint[] gpspoints) {
 		this.gpspoints = gpspoints;
 	}
-
+	
 	public GPSPoint[] getGPSPoints() {
 		return this.gpspoints;
 	}
-
+	
 	// beregn total distances (i meter)
 	public double totalDistance() {
 
 		double distance = 0;
 
 		// TODO - START
+	
 		for (int i = 1; i < gpspoints.length; i++) {
-
-			distance += GPSUtils.distance(gpspoints[i - 1], gpspoints[i]);
+			distance += GPSUtils.distance(gpspoints[i-1], gpspoints[i]);
 		}
+		
 		return distance;
+
 		// TODO - SLUTT
 
 	}
@@ -49,18 +51,17 @@ public class GPSComputer {
 		// TODO - START
 
 		for (int i = 1; i < gpspoints.length; i++) {
-
-			double elevation1 = gpspoints[i - 1].getElevation();
-			double elevation2 = gpspoints[i].getElevation();
-
-			if (elevation1 < elevation2) {
-
-				elevation += elevation2 - elevation1;
-
-			}
-
+			double ele1 = gpspoints[i-1].getElevation();
+			double ele2 = gpspoints[i].getElevation();
+			
+			if (ele1 < ele2) {
+				elevation += (ele2-ele1);
+			} 
+			
 		}
+		
 		return elevation;
+
 		// TODO - SLUTT
 
 	}
@@ -69,73 +70,74 @@ public class GPSComputer {
 	public int totalTime() {
 
 		int totalTime;
-
+		
 		int start = gpspoints[0].getTime();
-		int end = gpspoints[gpspoints.length - 1].getTime();
-
-		totalTime = end - start;
-
+		int end = gpspoints[gpspoints.length-1].getTime();
+		
+		totalTime = end-start;
+		
 		return totalTime;
 
 	}
-
+		
 	// beregn gjennomsnitshastighets mellom hver av gps punktene
 
 	public double[] speeds() {
-
-		// TODO - START // OPPGAVE - START
-
-		double[] speeds = new double[gpspoints.length - 1];
-
+		
+		// TODO - START
+		
+		double[] speeds = new double[gpspoints.length-1];
+		
 		for (int i = 1; i < gpspoints.length; i++) {
-
-			speeds[i - 1] = GPSUtils.speed(gpspoints[i - 1], gpspoints[i]);
-
+			speeds[i-1] = GPSUtils.speed(gpspoints[i-1], gpspoints[i]);
 		}
+		
 		return speeds;
 
 		// TODO - SLUTT
 
 	}
-
+	
 	public double maxSpeed() {
-
+		
 		double maxspeed = 0;
-
+		
 		// TODO - START
+		
 		double[] speeds = speeds();
-
+		
 		maxspeed = GPSUtils.findMax(speeds);
-
+		
 		return maxspeed;
+		
 		// TODO - SLUTT
-
+		
 	}
 
 	public double averageSpeed() {
 
 		double average = 0;
-
+		
 		// TODO - START
-
-		double distance = totalDistance();
-		double time = totalTime();
-
+		
+		double distance = totalDistance(); // distance in meters
+		double time = totalTime(); // time in seconds
+		
 		average = (distance / time) * 3.6;
-
+		
 		return average;
-
+		
 		// TODO - SLUTT
-
+		
 	}
 
 	/*
-	 * bicycling, <10 mph, leisure, to work or for pleasure 4.0 bicycling, general
-	 * 8.0 bicycling, 10-11.9 mph, leisure, slow, light effort 6.0 bicycling,
-	 * 12-13.9 mph, leisure, moderate effort 8.0 bicycling, 14-15.9 mph, racing or
-	 * leisure, fast, vigorous effort 10.0 bicycling, 16-19 mph, racing/not drafting
-	 * or >19 mph drafting, very fast, racing general 12.0 bicycling, >20 mph,
-	 * racing, not drafting 16.0
+	 * bicycling, <10 mph, leisure, to work or for pleasure 4.0 bicycling,
+	 * general 8.0 bicycling, 10-11.9 mph, leisure, slow, light effort 6.0
+	 * bicycling, 12-13.9 mph, leisure, moderate effort 8.0 bicycling, 14-15.9
+	 * mph, racing or leisure, fast, vigorous effort 10.0 bicycling, 16-19 mph,
+	 * racing/not drafting or >19 mph drafting, very fast, racing general 12.0
+	 * bicycling, >20 mph, racing, not drafting 16.0
 	 */
 
 	// conversion factor m/s to miles per hour
@@ -144,41 +146,37 @@ public class GPSComputer {
 	// beregn kcal gitt weight og tid der kjøres med en gitt hastighet
 	public double kcal(double weight, int secs, double speed) {
 
-		// MET: Metabolic equivalent of task angir (kcal x kg-1 x h-1)
-		double met = 0;
-		double speedmph = speed * MS;
-
-		// TODO - START
-
-		double hours = secs / 3600.0;
-
 		double kcal;
 
+		// MET: Metabolic equivalent of task angir (kcal x kg-1 x h-1)
+		double met = 0;		
+		double speedmph = speed * MS;
+		
+		// TODO - START
+		
+		double hour = secs / 3600.0;
+		
 		if (speedmph < 10) {
 			met = 4.0;
-
-		} else if (speedmph >= 10 && 12 > speedmph) {
+		} else if (speedmph >= 10 && speedmph < 12) {
 			met = 6.0;
-
-		} else if (speedmph >= 12 && 14 > speedmph) {
+		} else if (speedmph >= 12 && speedmph < 14) {
 			met = 8.0;
-
-		} else if (speedmph >= 14 && 16 > speedmph) {
+		} else if (speedmph >= 14 && speedmph < 16) {
 			met = 10.0;
-
-		} else if (speedmph >= 16 && 20 > speedmph) {
+		} else if (speedmph >= 16 && speedmph < 20) {
 			met = 12.0;
-
 		} else {
 			met = 16.0;
-
 		}
-
-		kcal = met * weight * hours;
-
+		
+		kcal = met * weight * hour;
+		
 		return kcal;
-		// TODO - SLUTT
+		
 
+		// TODO - SLUTT
+		
 	}
 
 	public double totalKcal(double weight) {
@@ -186,54 +184,67 @@ public class GPSComputer {
 		double totalkcal = 0;
 
 		// TODO - START
-
-		double[] speed = speeds();
-
-		for (int i = 0; i < speed.length; i++) {
-
-//			int time1 = gpspoints[i].getTime();
-//			int time2 = gpspoints[i + 1].getTime();
-//			int secs = (time2 - time1);
-
+		
+		double[] speed = speeds(); // a table with the average speeds between two points
+		
+		for (int i = 0; i < speed.length; i++ ) {
 			
-
-			totalkcal += kcal(weight, gpspoints[i+1].getTime() - gpspoints[i].getTime(), speed[i]);
-
+			int time1 = gpspoints[i].getTime(); // time in seconds
+			int time2 = gpspoints[i+1].getTime(); // time in seconds
+			int secs = (time2 - time1); // time in seconds between two points
+			
+			double avgspeed = speed[i];
+			
+			totalkcal += kcal(weight, secs, avgspeed);			
 		}
 		
 		return totalkcal;
-
-//		int seconds = totalTime();
-//		double avgspeed = averageSpeed();
-//
-//		totalkcal = kcal(weight, seconds, avgspeed);
-//		return totalkcal;
+		
 
 		// TODO - SLUTT
-
+		
 	}
-
+	
 	private static double WEIGHT = 80.0;
 	
-	public double getWEIGHT() {
-		this.WEIGHT = WEIGHT;
+	public double getWeight() {
 		return WEIGHT;
 	}
-
+	
 	public void displayStatistics() {
 
 		System.out.println("==============================================");
-		System.out.println("Total Time         :" + GPSUtils.formatTime(totalTime()));
-		System.out.println("Total distance     :" + GPSUtils.formatDouble(totalDistance()) + " km");
-		System.out.println("Total elevation    :" + GPSUtils.formatDouble(totalElevation()) + " m");
-		System.out.println("Max speed          :" + GPSUtils.formatDouble(maxSpeed()) + " km/h");
-		System.out.println("Average speed      :" + GPSUtils.formatDouble(averageSpeed()) + " km/h");
-		System.out.println("Energy             :" + GPSUtils.formatDouble(totalKcal(WEIGHT)) + " kcal");
 
 		// TODO - START
 		
-		// TODO - SLUTT
+		String time = GPSUtils.formatTime(totalTime());
+		
+		double dis = totalDistance() / 1000; // km
+		String distance = GPSUtils.formatDouble(dis);
+		
+		double ele = totalElevation(); // m
+		String elevation = GPSUtils.formatDouble(ele);
+		
+		double maxs= maxSpeed(); // km/h
+		String maxspeed = GPSUtils.formatDouble(maxs);
+		
+		double avgs = averageSpeed(); // km/h
+		String avgspeed = GPSUtils.formatDouble(avgs);
+		
+		double kcal = totalKcal(WEIGHT); 
+		String energy = GPSUtils.formatDouble(kcal);
+		
+		System.out.println("Total time     : " + time);
+		System.out.println("Total distance : " + distance + " km");
+		System.out.println("Total elevation: " + elevation + " m");
+		System.out.println("Max speed      : " + maxspeed + " km/t");
+		System.out.println("Average speed  : " + avgspeed + " km/t");
+		System.out.println("Energy         : " + energy + " kcal");
 
+		
+		
+		// TODO - SLUTT
+		
 	}
 
 }
