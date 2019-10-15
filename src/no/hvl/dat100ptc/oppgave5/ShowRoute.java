@@ -1,7 +1,7 @@
-
 package no.hvl.dat100ptc.oppgave5;
 
 import javax.swing.JOptionPane;
+import java.lang.Math;
 
 import easygraphics.EasyGraphics;
 import no.hvl.dat100ptc.TODO;
@@ -12,8 +12,8 @@ import no.hvl.dat100ptc.oppgave4.GPSComputer;
 public class ShowRoute extends EasyGraphics {
 
 	private static int MARGIN = 50;
-	private static int MAPXSIZE = 800;
-	private static int MAPYSIZE = 800;
+	private static int MAPXSIZE = 600;
+	private static int MAPYSIZE = 600;
 
 	private GPSPoint[] gpspoints;
 	private GPSComputer gpscomputer;
@@ -37,7 +37,7 @@ public class ShowRoute extends EasyGraphics {
 
 		showRouteMap(MARGIN + MAPYSIZE);
 
-		playRoute(MARGIN + MAPYSIZE);
+//		playRoute(MARGIN + MAPYSIZE);
 		
 		showStatistics();
 	}
@@ -60,12 +60,13 @@ public class ShowRoute extends EasyGraphics {
 		
 		// TODO - START
 		
-		double maxlan = GPSUtils.findMax(GPSUtils.getLatitudes(gpspoints));
-		double minlan = GPSUtils.findMin(GPSUtils.getLatitudes(gpspoints));
-
-		ystep = MAPXSIZE / (Math.abs(maxlan - minlan)); 
-
+		double maxlat = GPSUtils.findMax(GPSUtils.getLatitudes(gpspoints));
+		double minlat = GPSUtils.findMin(GPSUtils.getLatitudes(gpspoints));
+		
+		ystep = MAPYSIZE / (Math.abs(maxlat - minlat));
+		
 		return ystep;
+
 		// TODO - SLUTT
 		
 	}
@@ -74,37 +75,40 @@ public class ShowRoute extends EasyGraphics {
 
 		// TODO - START
 		
-		//find x,y pos med long lang. tegn cirkle, tegne strekk fra gammel xy til ny xy
+		// latitude -> y-axis, longitude -> x-axis
+		
+		double[] latitudes = GPSUtils.getLatitudes(gpspoints);
+		double[] longitudes = GPSUtils.getLongitudes(gpspoints);
+		
+		int x = 0, y = 0;
+		
+		double minLat = GPSUtils.findMin(latitudes);
+		double minLong = GPSUtils.findMin(longitudes);
+		
+		double ystep = ystep();
+		double xstep = xstep();
+		
+		int prevX = (int) Math.round(((longitudes[0] - minLong) * xstep));
+		int prevY = (int) Math.round(((latitudes[0] - minLat) * ystep));
+		
 		setColor(0,255,0);
+		int r = 3; // radius for points
 		
-		int x=0;
-		int y=0;
-		
-		double lats[] = GPSUtils.getLatitudes(gpspoints);
-		double lons[] = GPSUtils.getLongitudes(gpspoints);
-		
-		int oldX = (int) Math.round(((lons[0]-GPSUtils.findMin(GPSUtils.getLongitudes(gpspoints)))*xstep()));
-		int oldY = (int) Math.round(((lats[0]-GPSUtils.findMin(GPSUtils.getLatitudes(gpspoints)))*ystep()));
-		
-		
-		for(int i = 0 ;  i < gpspoints.length;i ++) {
+		for (int i = 0; i < gpspoints.length; i++) {
+			x = (int) Math.round(((longitudes[i] - minLong) * xstep));
+			y = (int) Math.round(((latitudes[i] - minLat) * ystep));
 			
-		x =  (int) Math.round(((lons[i]-GPSUtils.findMin(GPSUtils.getLongitudes(gpspoints)))*xstep()));
-		y = (int)Math.round(((lats[i]-GPSUtils.findMin(GPSUtils.getLatitudes(gpspoints)))*ystep()));
-
-		
-		fillCircle(x+ MARGIN,  ybase-y, 4);
-		drawLine(oldX+MARGIN,ybase-oldY, x+MARGIN, ybase-y);
-	
-		oldX = x;
-		oldY = y;
-		
-		
+			fillCircle(x + MARGIN, ybase - y,r);
+			
+			drawLine(prevX + MARGIN, ybase - prevY, x + MARGIN, ybase - y);
+			
+			prevX = x;
+			prevY = y;	
 		}
-		setColor(0,0,255);
-		fillCircle(x+ MARGIN,  ybase-y, 7);
 		
-	
+		setColor(0,0,255);
+		
+		fillCircle(x + MARGIN, ybase - y, r*2);
 		
 		// TODO - SLUTT
 	}
@@ -112,31 +116,50 @@ public class ShowRoute extends EasyGraphics {
 	public void showStatistics() {
 
 		int TEXTDISTANCE = 20;
+		int MARGIN = 10;
 
 		setColor(0,0,0);
-		setFont("Courier",11);
+		setFont("Courier",12);
 		
 		// TODO - START
 		
-	drawString(String.format("%-15s:%11s", "Total Time      ", GPSUtils.formatTime(gpscomputer.totalTime())), 15, 15);
-	drawString(String.format("%-15s:%11.2f km", "Total distance  ", gpscomputer.totalDistance()/1000),15, 25);
-	drawString(String.format("%-15s:%11.2f m", "Total elevation ", gpscomputer.totalElevation()), 15, 35);
-	drawString(String.format("%-15s:%11.2f km/h", "Max speed       ", gpscomputer.maxSpeed()), 15, 45);
-	drawString(String.format("%-15s:%11.2f km/h", "Average speed   ", gpscomputer.averageSpeed()), 15, 55);
-	drawString(String.format("%-15s:%11.2f kcal", "Energy          ", gpscomputer.totalKcal(gpscomputer.getWEIGHT())), 15, 65);
+		int seconds = gpscomputer.totalTime();
+		String time = GPSUtils.formatTime(seconds);
+		
+		double dis = gpscomputer.totalDistance() / 1000.0;
+		String distance = GPSUtils.formatDouble(dis) + " km";
+		
+		double ele = gpscomputer.totalElevation();
+		String elevation = GPSUtils.formatDouble(ele) + " m";
+		
+		double maxSpd = gpscomputer.maxSpeed();
+		String maxSpeed = GPSUtils.formatDouble(maxSpd) + " m/s";
+		
+		double avgSpd = gpscomputer.averageSpeed();
+		String avgSpeed = GPSUtils.formatDouble(avgSpd) + " m/s";
+		
+		double calories = gpscomputer.totalKcal(gpscomputer.getWeight());
+		String energy = GPSUtils.formatDouble(calories) + " kcal";
+		
+		drawString("Total time     :" + time, MARGIN, TEXTDISTANCE);
+		drawString("Total distance :" + distance, MARGIN, TEXTDISTANCE*2);
+		drawString("Total elevation:" + elevation, MARGIN, TEXTDISTANCE*3);
+		drawString("Max speed      :" + maxSpeed, MARGIN, TEXTDISTANCE*4);
+		drawString("Average speed  :" + avgSpeed, MARGIN, TEXTDISTANCE*5);
+		drawString("Energy         :" + energy, MARGIN, TEXTDISTANCE*6);
+		
+		
+		
+		
 		
 		// TODO - SLUTT;
 	}
 
-	
-	
-	
-	
 	public void playRoute(int ybase) {
 
 		// TODO - START
 		
-	//	throw new UnsupportedOperationException(TODO.method());
+		throw new UnsupportedOperationException(TODO.method());
 		
 		// TODO - SLUTT
 	}
